@@ -51,6 +51,7 @@ extern "C" {
 #include "src/lv_widgets/lv_page.h"
 #include "src/lv_widgets/lv_cont.h"
 #include "src/lv_widgets/lv_list.h"
+#include "src/lv_widgets/lv_3d_chart.h"
 #include "src/lv_widgets/lv_chart.h"
 #include "src/lv_widgets/lv_table.h"
 #include "src/lv_widgets/lv_checkbox.h"
