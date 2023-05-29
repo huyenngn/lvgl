@@ -39,8 +39,10 @@ typedef struct {
     /*No inherited ext*/ /*Ext. of ancestor*/
     /*New data for this type */
     lv_ll_t points_ll;
-    double mid_y;
-    double mid_x;
+    lv_coord_t x_max;
+    lv_coord_t y_max;
+    lv_coord_t z_max;
+
 } lv_3d_chart_ext_t;
 
 /**********************
