@@ -26,10 +26,10 @@
 #define MID_VER 80
 #define MID_HOR 68
 
-// Max values for all axis  (used to scale the data)
-#define LV_3D_CHART_XMAX_DEF 200
-#define LV_3D_CHART_YMAX_DEF 200
-#define LV_3D_CHART_ZMAX_DEF 200
+// Max values - Min valus for all axis  (used to scale the data)
+#define LV_3D_CHART_XRANGE 200
+#define LV_3D_CHART_YRANGE 200
+#define LV_3D_CHART_ZRANGE 200
 
 #define MAX_COLOR 1500
 
@@ -92,7 +92,7 @@ lv_3d_chart_point_t *lv_3d_chart_set_next(lv_obj_t *chart, lv_coord_t x, lv_coor
         return NULL;
 
     // Assign color
-    int16_t c = MAX_COLOR * z / LV_3D_CHART_ZMAX_DEF;
+    int16_t c = MAX_COLOR * z / LV_3D_CHART_ZRANGE;
     uint8_t dif = c % 255;
     switch (c / 255)
     {
@@ -116,9 +116,9 @@ lv_3d_chart_point_t *lv_3d_chart_set_next(lv_obj_t *chart, lv_coord_t x, lv_coor
         break;
     }
 
-    x = 100 * x / LV_3D_CHART_XMAX_DEF;
-    y = 100 * y / LV_3D_CHART_YMAX_DEF;
-    z = 100 * z / LV_3D_CHART_ZMAX_DEF;
+    x = 100 * x / LV_3D_CHART_XRANGE;
+    y = 100 * y / LV_3D_CHART_YRANGE;
+    z = 100 * z / LV_3D_CHART_ZRANGE;
 
     // Convert 3D vector to 2D point on screen
     point->point.x = 0.707*x - 0.707*y + 0.0*z + MID_HOR;
