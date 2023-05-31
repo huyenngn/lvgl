@@ -21,13 +21,27 @@
  *********************/
 #define LV_OBJX_NAME "lv_3d_chart"
 
+#define MAX_VER 160
+#define MAX_HOR 135
+#define MID_VER 80
+#define MID_HOR 68
+
+// Max values for all axis  (used to scale the data)
+#define LV_3D_CHART_XMAX_DEF 200
+#define LV_3D_CHART_YMAX_DEF 200
+#define LV_3D_CHART_ZMAX_DEF 200
+
 /**********************
  *  STATIC PROTOTYPES
  **********************/
 static lv_design_res_t lv_3d_chart_design(lv_obj_t *chart, const lv_area_t *clip_area);
 static void draw_points(lv_obj_t *chart, const lv_area_t *clip_area);
 static void draw_grid(lv_obj_t *obj, const lv_area_t *clip_area);
-static void vector_to_point(lv_vector_t * vector, lv_point_t * point);
+
+/**********************
+ *  STATIC VARIABLES
+ **********************/
+static const int16_t color_thresh[] = {1530, 1275, 1020, 765, 510, 255};
 
 /**********************
  *   GLOBAL FUNCTIONS
@@ -40,6 +54,9 @@ lv_obj_t *lv_3d_chart_create(lv_obj_t *par, const lv_obj_t *copy)
     LV_ASSERT_MEM(chart);
     if (chart == NULL)
         return NULL;
+
+    lv_obj_set_size(chart, MAX_HOR, MAX_VER);
+    lv_obj_set_pos(chart, 0, 0);
 
     /*Allocate the object type specific extended data*/
     lv_3d_chart_ext_t *ext = lv_obj_allocate_ext_attr(chart, sizeof(lv_3d_chart_ext_t));
@@ -73,22 +90,39 @@ lv_3d_chart_point_t *lv_3d_chart_set_next(lv_obj_t *chart, lv_coord_t x, lv_coor
     if (point == NULL)
         return NULL;
 
-    lv_vector_t * vector = lv_mem_alloc(sizeof(lv_vector_t));
-    LV_ASSERT_MEM(vector);
-    if(vector == NULL) {
-        return NULL;
+    x = 100 * x / LV_3D_CHART_XMAX_DEF;
+    y = 100 * y / LV_3D_CHART_YMAX_DEF;
+    z = 100 * z / LV_3D_CHART_ZMAX_DEF;
+
+    // Convert 3D vector to 2D point on screen
+    point->point.x = 0.707*x - 0.707*y + 0.0*z + MID_HOR;
+    point->point.y = 0.409*x + 0.409*y - 0.816*z + MID_VER;
+
+    // Assign color
+    int16_t c = color_thresh[0] * z / LV_3D_CHART_ZMAX_DEF;
+    uint8_t dif = c % 255;
+    switch (c / 255)
+    {
+    case 0:
+        point->color = LV_COLOR_MAKE(255, dif, 0);
+        break;
+    case 1:
+        point->color = LV_COLOR_MAKE((255-dif), 255, 0);
+        break;
+    case 2:
+        point->color = LV_COLOR_MAKE(0, 255, dif);
+        break;
+    case 3:
+        point->color = LV_COLOR_MAKE(0, (255-dif), 255);
+        break;
+    case 4:
+        point->color = LV_COLOR_MAKE(dif, 0, 255);
+        break;
+    default:
+        point->color = LV_COLOR_MAKE(255, 0, (255-dif));
+        break;
     }
-
-    vector->x = x;
-    vector->y = y;
-    vector->z = z;
-
-    vector_to_point(vector, &point->point);
-
-    lv_mem_free(vector);
-    point->color = LV_COLOR_MAKE(255, 0, 0);
-
-
+    
     lv_3d_chart_refresh(chart);
 
     return point;
@@ -112,14 +146,6 @@ void lv_3d_chart_refresh(lv_obj_t *chart)
 /**********************
  *   STATIC FUNCTIONS
  **********************/
-
-static void vector_to_point(lv_vector_t * vector, lv_point_t * point) {
-
-    double mid_y = LV_VER_RES / 3;
-    double mid_x = LV_HOR_RES / 2;
-    point->x = (vector->x - vector->z) / 1.41 + mid_x;
-    point->y = (vector->x + 2*vector->y + vector->z) / 2.45 + mid_y;
-}
 
 static lv_design_res_t lv_3d_chart_design(lv_obj_t *chart, const lv_area_t *clip_area)
 {
@@ -170,54 +196,55 @@ static void draw_grid(lv_obj_t *obj, const lv_area_t *clip_area)
     lv_draw_line_dsc_init(&line_dsc);
     lv_obj_init_draw_line_dsc(obj, LV_CHART_PART_BG, &line_dsc);
 
-    double mid_y = LV_VER_RES / 3;
-    double mid_x = LV_HOR_RES / 2;
-    double left_x = 1.73 * (mid_y);
-    double m = mid_y / left_x;
+    double left_x = 1.73 * (MID_VER);
+    double m = MID_VER / left_x;
 
     double x, y, n;
 
-    for (x = 0; x < mid_x + 20; x += 10)
+    // Draw vertical lines
+    for (x = 0; x < left_x; x += 10)
     {
         lv_point_t p1;
         lv_point_t p2;
-        p1.x = x + mid_x;
+        p1.x = x + MID_HOR;
         p1.y = 0;
-        p2.x = x + mid_x;
-        p2.y = m * x + mid_y;
+        p2.x = x + MID_HOR;
+        p2.y = m * x + MID_VER;
         lv_draw_line(&p1, &p2, clip_area, &line_dsc);
-        p2.x = x + mid_x;
-        p2.y = m * x + mid_y;
-        p1.y = LV_HOR_RES;
+        p2.x = x + MID_HOR;
+        p2.y = m * x + MID_VER;
+        p1.y = MAX_VER;
         n = p2.y + (m * p2.x);
         p1.x = (p1.y - n) / -m;
         lv_draw_line(&p1, &p2, clip_area, &line_dsc);
-        p1.x = mid_x - x;
+        p1.x = MID_HOR - x;
         p1.y = 0;
-        p2.x = mid_x - x;
-        p2.y = m * x + mid_y;
+        p2.x = MID_HOR - x;
+        p2.y = m * x + MID_VER;
         lv_draw_line(&p1, &p2, clip_area, &line_dsc);
-        p2.x = mid_x - x;
-        p2.y = m * x + mid_y;
-        p1.y = LV_HOR_RES;
+        p2.x = MID_HOR - x;
+        p2.y = m * x + MID_VER;
+        p1.y = MAX_VER;
         n = p2.y - (m * p2.x);
         p1.x = (p1.y - n) / m;
         lv_draw_line(&p1, &p2, clip_area, &line_dsc);
     }
 
     // Draw horizontal lines
-    for (y = 5; y < LV_VER_RES - 10; y += 10)
+
+    int16_t k = m * MID_HOR + MID_VER;
+    for (y = 0; y < k; y += 11)
     {
         lv_point_t p1;
         lv_point_t p2;
         p1.x = 0;
         p1.y = y;
-        p2.x = mid_x;
-        p2.y = -m * mid_x + y;
+        p2.x = MID_HOR;
+        p2.y = -m * MID_HOR + y;
         lv_draw_line(&p1, &p2, clip_area, &line_dsc);
-        p1.x = mid_x;
-        p1.y = -m * mid_x + y;
-        p2.x = LV_HOR_RES;
+        p1.x = MID_HOR;
+        p1.y = -m * MID_HOR + y;
+        p2.x = MAX_HOR;
         p2.y = y;
         lv_draw_line(&p1, &p2, clip_area, &line_dsc);
     }

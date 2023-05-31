@@ -22,12 +22,6 @@ extern "C" {
  *      TYPEDEFS
  **********************/
 
-typedef struct {
-    lv_coord_t x;
-    lv_coord_t y;
-    lv_coord_t z;
-} lv_vector_t;
-
 // (255,0,0) -> (255,255,0) -> (0,255,0) -> (0,255,255) -> 
 // (0,0,255) -> (255,0,255) -> (255,0,0)
 typedef struct {
@@ -36,13 +30,7 @@ typedef struct {
 } lv_3d_chart_point_t;
 
 typedef struct {
-    /*No inherited ext*/ /*Ext. of ancestor*/
-    /*New data for this type */
     lv_ll_t points_ll;
-    lv_coord_t x_max;
-    lv_coord_t y_max;
-    lv_coord_t z_max;
-
 } lv_3d_chart_ext_t;
 
 /**********************
