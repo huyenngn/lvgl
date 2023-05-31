@@ -31,6 +31,8 @@
 #define LV_3D_CHART_YMAX_DEF 200
 #define LV_3D_CHART_ZMAX_DEF 200
 
+#define MAX_COLOR 1500
+
 /**********************
  *  STATIC PROTOTYPES
  **********************/
@@ -41,7 +43,6 @@ static void draw_grid(lv_obj_t *obj, const lv_area_t *clip_area);
 /**********************
  *  STATIC VARIABLES
  **********************/
-static const int16_t color_thresh[] = {1530, 1275, 1020, 765, 510, 255};
 
 /**********************
  *   GLOBAL FUNCTIONS
@@ -90,16 +91,8 @@ lv_3d_chart_point_t *lv_3d_chart_set_next(lv_obj_t *chart, lv_coord_t x, lv_coor
     if (point == NULL)
         return NULL;
 
-    x = 100 * x / LV_3D_CHART_XMAX_DEF;
-    y = 100 * y / LV_3D_CHART_YMAX_DEF;
-    z = 100 * z / LV_3D_CHART_ZMAX_DEF;
-
-    // Convert 3D vector to 2D point on screen
-    point->point.x = 0.707*x - 0.707*y + 0.0*z + MID_HOR;
-    point->point.y = 0.409*x + 0.409*y - 0.816*z + MID_VER;
-
     // Assign color
-    int16_t c = color_thresh[0] * z / LV_3D_CHART_ZMAX_DEF;
+    int16_t c = MAX_COLOR * z / LV_3D_CHART_ZMAX_DEF;
     uint8_t dif = c % 255;
     switch (c / 255)
     {
@@ -122,6 +115,14 @@ lv_3d_chart_point_t *lv_3d_chart_set_next(lv_obj_t *chart, lv_coord_t x, lv_coor
         point->color = LV_COLOR_MAKE(255, 0, (255-dif));
         break;
     }
+
+    x = 100 * x / LV_3D_CHART_XMAX_DEF;
+    y = 100 * y / LV_3D_CHART_YMAX_DEF;
+    z = 100 * z / LV_3D_CHART_ZMAX_DEF;
+
+    // Convert 3D vector to 2D point on screen
+    point->point.x = 0.707*x - 0.707*y + 0.0*z + MID_HOR;
+    point->point.y = 0.409*x + 0.409*y - 0.816*z + MID_VER;
     
     lv_3d_chart_refresh(chart);
 
