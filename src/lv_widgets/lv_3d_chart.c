@@ -136,7 +136,7 @@ void lv_3d_chart_remove_series(lv_obj_t * chart, lv_3d_chart_series_t * series) 
     return;
 }
 
-void lv_3d_chart_add_cursor(lv_obj_t *chart, lv_coord_t x, lv_coord_t y, lv_coord_t z)
+lv_3d_chart_point_t * lv_3d_chart_add_cursor(lv_obj_t *chart, lv_coord_t x, lv_coord_t y, lv_coord_t z)
 {
     LV_ASSERT_OBJ(chart, LV_OBJX_NAME);
 
@@ -180,6 +180,8 @@ void lv_3d_chart_add_cursor(lv_obj_t *chart, lv_coord_t x, lv_coord_t y, lv_coor
     point->point.y = 0.409 * x + 0.409 * y - 0.816 * z + MID_VER;
 
     lv_3d_chart_refresh(chart);
+
+    return point;
 }
 
 /*=====================
@@ -228,13 +230,12 @@ void lv_3d_chart_set_points(lv_obj_t *chart, lv_3d_chart_series_t *ser, lv_coord
             break;
         }
 
-        x = 100 * x / LV_3D_CHART_XMAX;
         y = 100 * y / LV_3D_CHART_YMAX;
         z = 100 * z / LV_3D_CHART_ZMAX;
 
         // Convert 3D vector to 2D point on screen
-        point->point.x = 0.707 * x - 0.707 * y + 0.0 * z + MID_HOR;
-        point->point.y = 0.409 * x + 0.409 * y - 0.816 * z + MID_VER;
+        point->point.x = MID_HOR - 0.707 * y + 0.0 * z;
+        point->point.y = MID_VER + 0.409 * y - 0.816 * z;
     }
 
     lv_3d_chart_refresh(chart);

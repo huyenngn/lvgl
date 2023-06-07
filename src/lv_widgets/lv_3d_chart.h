@@ -64,7 +64,7 @@ lv_3d_chart_series_t * lv_3d_chart_add_series(lv_obj_t * chart);
  */
 void lv_3d_chart_remove_series(lv_obj_t * chart, lv_3d_chart_series_t * series);
 
-void lv_3d_chart_set_cursor(lv_obj_t * chart, lv_coord_t x, lv_coord_t y, lv_coord_t z);
+lv_3d_chart_point_t * lv_3d_chart_add_cursor(lv_obj_t * chart, lv_coord_t x, lv_coord_t y, lv_coord_t z);
 
 
 /*=====================
