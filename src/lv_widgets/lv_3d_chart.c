@@ -27,9 +27,11 @@
 #define MID_HOR 68
 
 // Max values - Min valus for all axis  (used to scale the data)
-#define LV_3D_CHART_XRANGE 200
-#define LV_3D_CHART_YRANGE 200
-#define LV_3D_CHART_ZRANGE 200
+#define LV_3D_CHART_XMAX 200
+#define LV_3D_CHART_YMAX 200
+#define LV_3D_CHART_ZMAX 200
+
+#define LV_3D_CHART_XPOINTS 100
 
 #define MAX_COLOR 1500
 
@@ -37,7 +39,7 @@
  *  STATIC PROTOTYPES
  **********************/
 static lv_design_res_t lv_3d_chart_design(lv_obj_t *chart, const lv_area_t *clip_area);
-static void draw_points(lv_obj_t *chart, const lv_area_t *clip_area);
+static void draw_cursors(lv_obj_t *chart, const lv_area_t *clip_area);
 static void draw_grid(lv_obj_t *obj, const lv_area_t *clip_area);
 
 /**********************
@@ -68,7 +70,10 @@ lv_obj_t *lv_3d_chart_create(lv_obj_t *par, const lv_obj_t *copy)
         return NULL;
     }
 
-    _lv_ll_init(&ext->points_ll, sizeof(lv_3d_chart_point_t));
+    _lv_ll_init(&ext->series_ll, sizeof(lv_3d_chart_series_t));
+    _lv_ll_init(&ext->cursor_ll, sizeof(lv_3d_chart_series_t));
+
+    ext->series_cnt = 0;
 
     lv_obj_set_design_cb(chart, lv_3d_chart_design);
 
@@ -77,22 +82,72 @@ lv_obj_t *lv_3d_chart_create(lv_obj_t *par, const lv_obj_t *copy)
     return chart;
 }
 
-/*=====================
- * Setter functions
- *====================*/
+/*======================
+ * Add/remove functions
+ *=====================*/
 
-lv_3d_chart_point_t *lv_3d_chart_set_next(lv_obj_t *chart, lv_coord_t x, lv_coord_t y, lv_coord_t z)
+/**
+ * Allocate and add a data series to the chart
+ * @param chart pointer to a chart object
+ * @param color color of the data series
+ * @return pointer to the allocated data series
+ */
+lv_3d_chart_series_t *lv_3d_chart_add_series(lv_obj_t *chart)
 {
     LV_ASSERT_OBJ(chart, LV_OBJX_NAME);
 
     lv_3d_chart_ext_t *ext = lv_obj_get_ext_attr(chart);
-    lv_3d_chart_point_t *point = _lv_ll_ins_head(&ext->points_ll);
+    lv_3d_chart_series_t *ser = _lv_ll_ins_head(&ext->series_ll);
+    LV_ASSERT_MEM(ser);
+    if (ser == NULL)
+        return NULL;
+
+    _lv_ll_init(&ser->points_ll, sizeof(lv_3d_chart_point_t));
+
+    ext->series_cnt++;
+
+    if (ext->series_cnt > LV_3D_CHART_XPOINTS) {
+        lv_3d_chart_remove_series(chart, _lv_ll_get_tail(&ext->series_ll));
+        return ser;
+    }
+
+    return ser;
+}
+
+/**
+ * Deallocate and remove a data series from a chart
+ * @param chart pointer to a chart object
+ * @param series pointer to a data series on 'chart'
+ */
+void lv_3d_chart_remove_series(lv_obj_t * chart, lv_3d_chart_series_t * series) {
+    LV_ASSERT_OBJ(chart, LV_OBJX_NAME);
+    LV_ASSERT_NULL(series);
+
+    if(chart == NULL || series == NULL) return;
+    lv_3d_chart_ext_t * ext = lv_obj_get_ext_attr(chart);
+
+    _lv_ll_clear(&series->points_ll);
+
+    _lv_ll_remove(&ext->series_ll, series);
+    lv_mem_free(series);
+
+    ext->series_cnt--;
+
+    return;
+}
+
+void lv_3d_chart_add_cursor(lv_obj_t *chart, lv_coord_t x, lv_coord_t y, lv_coord_t z)
+{
+    LV_ASSERT_OBJ(chart, LV_OBJX_NAME);
+
+    lv_3d_chart_ext_t *ext = lv_obj_get_ext_attr(chart);
+    lv_3d_chart_point_t *point = _lv_ll_ins_head(&ext->cursor_ll);
     LV_ASSERT_MEM(point);
     if (point == NULL)
         return NULL;
 
     // Assign color
-    int16_t c = MAX_COLOR * z / LV_3D_CHART_ZRANGE;
+    int16_t c = MAX_COLOR * z / LV_3D_CHART_ZMAX;
     uint8_t dif = c % 255;
     switch (c / 255)
     {
@@ -100,33 +155,89 @@ lv_3d_chart_point_t *lv_3d_chart_set_next(lv_obj_t *chart, lv_coord_t x, lv_coor
         point->color = LV_COLOR_MAKE(255, dif, 0);
         break;
     case 1:
-        point->color = LV_COLOR_MAKE((255-dif), 255, 0);
+        point->color = LV_COLOR_MAKE((255 - dif), 255, 0);
         break;
     case 2:
         point->color = LV_COLOR_MAKE(0, 255, dif);
         break;
     case 3:
-        point->color = LV_COLOR_MAKE(0, (255-dif), 255);
+        point->color = LV_COLOR_MAKE(0, (255 - dif), 255);
         break;
     case 4:
         point->color = LV_COLOR_MAKE(dif, 0, 255);
         break;
     default:
-        point->color = LV_COLOR_MAKE(255, 0, (255-dif));
+        point->color = LV_COLOR_MAKE(255, 0, (255 - dif));
         break;
     }
 
-    x = 100 * x / LV_3D_CHART_XRANGE;
-    y = 100 * y / LV_3D_CHART_YRANGE;
-    z = 100 * z / LV_3D_CHART_ZRANGE;
+    x = 100 * x / LV_3D_CHART_XMAX;
+    y = 100 * y / LV_3D_CHART_YMAX;
+    z = 100 * z / LV_3D_CHART_ZMAX;
 
     // Convert 3D vector to 2D point on screen
-    point->point.x = 0.707*x - 0.707*y + 0.0*z + MID_HOR;
-    point->point.y = 0.409*x + 0.409*y - 0.816*z + MID_VER;
-    
-    lv_3d_chart_refresh(chart);
+    point->point.x = 0.707 * x - 0.707 * y + 0.0 * z + MID_HOR;
+    point->point.y = 0.409 * x + 0.409 * y - 0.816 * z + MID_VER;
 
-    return point;
+    lv_3d_chart_refresh(chart);
+}
+
+/*=====================
+ * Setter functions
+ *====================*/
+
+void lv_3d_chart_set_points(lv_obj_t *chart, lv_3d_chart_series_t *ser, lv_coord_t *y_array, lv_coord_t *z_array, uint16_t len)
+{
+
+    LV_ASSERT_OBJ(chart, LV_OBJX_NAME);
+
+    lv_coord_t x = 0;
+    lv_coord_t y, z;
+    for (uint16_t i = 0; i < len; i++)
+    {
+        y = y_array[i];
+        z = z_array[i];
+
+        lv_3d_chart_point_t *point = _lv_ll_ins_head(&ser->points_ll);
+        LV_ASSERT_MEM(point);
+        if (point == NULL)
+            return NULL;
+
+        // Assign color
+        int16_t c = MAX_COLOR * z / LV_3D_CHART_ZMAX;
+        uint8_t dif = c % 255;
+        switch (c / 255)
+        {
+        case 0:
+            point->color = LV_COLOR_MAKE(255, dif, 0);
+            break;
+        case 1:
+            point->color = LV_COLOR_MAKE((255 - dif), 255, 0);
+            break;
+        case 2:
+            point->color = LV_COLOR_MAKE(0, 255, dif);
+            break;
+        case 3:
+            point->color = LV_COLOR_MAKE(0, (255 - dif), 255);
+            break;
+        case 4:
+            point->color = LV_COLOR_MAKE(dif, 0, 255);
+            break;
+        default:
+            point->color = LV_COLOR_MAKE(255, 0, (255 - dif));
+            break;
+        }
+
+        x = 100 * x / LV_3D_CHART_XMAX;
+        y = 100 * y / LV_3D_CHART_YMAX;
+        z = 100 * z / LV_3D_CHART_ZMAX;
+
+        // Convert 3D vector to 2D point on screen
+        point->point.x = 0.707 * x - 0.707 * y + 0.0 * z + MID_HOR;
+        point->point.y = 0.409 * x + 0.409 * y - 0.816 * z + MID_VER;
+    }
+
+    lv_3d_chart_refresh(chart);
 }
 
 /*=====================
@@ -151,15 +262,15 @@ void lv_3d_chart_refresh(lv_obj_t *chart)
 static lv_design_res_t lv_3d_chart_design(lv_obj_t *chart, const lv_area_t *clip_area)
 {
     draw_grid(chart, clip_area);
-    draw_points(chart, clip_area);
+    draw_cursors(chart, clip_area);
 
     return LV_DESIGN_RES_OK;
 }
 
-static void draw_points(lv_obj_t *chart, const lv_area_t *clip_area)
+static void draw_cursors(lv_obj_t *chart, const lv_area_t *clip_area)
 {
     lv_3d_chart_ext_t *ext = lv_obj_get_ext_attr(chart);
-    if (_lv_ll_is_empty(&ext->points_ll))
+    if (_lv_ll_is_empty(&ext->cursor_ll))
         return;
 
     lv_3d_chart_point_t *point;
@@ -167,11 +278,12 @@ static void draw_points(lv_obj_t *chart, const lv_area_t *clip_area)
     lv_draw_rect_dsc_t point_dsc;
     lv_draw_rect_dsc_init(&point_dsc);
     point_dsc.radius = LV_RADIUS_CIRCLE;
+    point_dsc.outline_width = 1;
 
-    lv_coord_t point_radius = 5;
+    lv_coord_t point_radius = 4;
 
     /*Go through all cursor lines*/
-    _LV_LL_READ_BACK(ext->points_ll, point)
+    _LV_LL_READ_BACK(ext->cursor_ll, point)
     {
         point_dsc.bg_color = point->color;
 
@@ -188,6 +300,44 @@ static void draw_points(lv_obj_t *chart, const lv_area_t *clip_area)
             point_area.y1 -= point_radius;
             lv_draw_rect(&point_area, clip_area, &point_dsc);
         }
+    }
+}
+
+static void draw_points(lv_obj_t *chart, const lv_area_t *clip_area)
+{
+    lv_3d_chart_ext_t *ext = lv_obj_get_ext_attr(chart);
+    if (_lv_ll_is_empty(&ext->series_ll))
+        return;
+
+    lv_3d_chart_point_t *point;
+    lv_3d_chart_series_t *series;
+    lv_coord_t offset = 0;
+
+    lv_draw_rect_dsc_t point_dsc;
+    lv_draw_rect_dsc_init(&point_dsc);
+    point_dsc.radius = LV_RADIUS_CIRCLE;
+
+    lv_coord_t point_radius = 5;
+
+    /*Go through all cursor lines*/
+    _LV_LL_READ_BACK(ext->series_ll, series)
+    {
+        _LV_LL_READ_BACK(series->points_ll, point)
+        {
+            point_dsc.bg_color = point->color;
+
+            lv_area_t point_area;
+
+            point_area.x1 = point->point.x + (0.707 * offset);
+            point_area.x2 = point_area.x1 + point_radius;
+            point_area.x1 -= point_radius;
+
+            point_area.y1 = point->point.y + (0.409 * offset);
+            point_area.y2 = point_area.y1 + point_radius;
+            point_area.y1 -= point_radius;
+            lv_draw_rect(&point_area, clip_area, &point_dsc);
+        }
+        offset++;
     }
 }
 

@@ -31,6 +31,12 @@ typedef struct {
 
 typedef struct {
     lv_ll_t points_ll;
+} lv_3d_chart_series_t;
+
+typedef struct {
+    lv_ll_t series_ll;
+    lv_ll_t cursor_ll;
+    uint16_t series_cnt;
 } lv_3d_chart_ext_t;
 
 /**********************
@@ -39,11 +45,33 @@ typedef struct {
 
 lv_obj_t * lv_3d_chart_create(lv_obj_t * par, const lv_obj_t * copy);
 
+/*======================
+ * Add/remove functions
+ *=====================*/
+
+/**
+ * Allocate and add a data series to the chart
+ * @param chart pointer to a chart object
+ * @param color color of the data series
+ * @return pointer to the allocated data series
+ */
+lv_3d_chart_series_t * lv_3d_chart_add_series(lv_obj_t * chart);
+
+/**
+ * Deallocate and remove a data series from a chart
+ * @param chart pointer to a chart object
+ * @param series pointer to a data series on 'chart'
+ */
+void lv_3d_chart_remove_series(lv_obj_t * chart, lv_3d_chart_series_t * series);
+
+void lv_3d_chart_set_cursor(lv_obj_t * chart, lv_coord_t x, lv_coord_t y, lv_coord_t z);
+
+
 /*=====================
  * Setter functions
  *====================*/
 
-lv_3d_chart_point_t * lv_3d_chart_set_next(lv_obj_t * chart, lv_coord_t x, lv_coord_t y, lv_coord_t z);
+void lv_3d_chart_set_points(lv_obj_t * chart, lv_3d_chart_series_t * ser, lv_coord_t * y, lv_coord_t * z, uint16_t len);
 
 /*=====================
  * Other functions
