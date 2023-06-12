@@ -21,11 +21,6 @@
  *********************/
 #define LV_OBJX_NAME "lv_3d_chart"
 
-#define MAX_VER 160
-#define MAX_HOR 135
-#define MID_VER 80
-#define MID_HOR 68
-
 // Max values - Min valus for all axis  (used to scale the data)
 #define LV_3D_CHART_XMAX 200
 #define LV_3D_CHART_YMAX 200

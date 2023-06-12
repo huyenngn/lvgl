@@ -18,6 +18,11 @@ extern "C" {
 #include "../lv_core/lv_obj.h"
 #include "lv_line.h"
 
+#define MAX_VER 160
+#define MAX_HOR 135
+#define MID_VER 80
+#define MID_HOR 68
+
 /**********************
  *      TYPEDEFS
  **********************/
