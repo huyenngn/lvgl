@@ -26,8 +26,7 @@
 #define LV_3D_CHART_YMAX 200
 #define LV_3D_CHART_ZMAX 200
 
-#define LV_3D_CHART_XPOINTS 100
-
+#define LV_3D_CHART_MAX_POINTS 100
 #define MAX_COLOR 1500
 
 /**********************
@@ -36,6 +35,7 @@
 static lv_design_res_t lv_3d_chart_design(lv_obj_t *chart, const lv_area_t *clip_area);
 static void draw_cursors(lv_obj_t *chart, const lv_area_t *clip_area);
 static void draw_grid(lv_obj_t *obj, const lv_area_t *clip_area);
+static void draw_points(lv_obj_t *chart, const lv_area_t *clip_area);
 
 /**********************
  *  STATIC VARIABLES
@@ -101,7 +101,7 @@ lv_3d_chart_series_t *lv_3d_chart_add_series(lv_obj_t *chart)
 
     ext->series_cnt++;
 
-    if (ext->series_cnt > LV_3D_CHART_XPOINTS) {
+    if (ext->series_cnt > LV_3D_CHART_MAX_POINTS) {
         lv_3d_chart_remove_series(chart, _lv_ll_get_tail(&ext->series_ll));
         return ser;
     }
@@ -188,7 +188,6 @@ void lv_3d_chart_set_points(lv_obj_t *chart, lv_3d_chart_series_t *ser, lv_coord
 
     LV_ASSERT_OBJ(chart, LV_OBJX_NAME);
 
-    lv_coord_t x = 0;
     lv_coord_t y, z;
     for (uint16_t i = 0; i < len; i++)
     {
@@ -198,7 +197,7 @@ void lv_3d_chart_set_points(lv_obj_t *chart, lv_3d_chart_series_t *ser, lv_coord
         lv_3d_chart_point_t *point = _lv_ll_ins_head(&ser->points_ll);
         LV_ASSERT_MEM(point);
         if (point == NULL)
-            return NULL;
+            return;
 
         // Assign color
         int16_t c = MAX_COLOR * z / LV_3D_CHART_ZMAX;
@@ -259,6 +258,7 @@ static lv_design_res_t lv_3d_chart_design(lv_obj_t *chart, const lv_area_t *clip
 {
     draw_grid(chart, clip_area);
     draw_cursors(chart, clip_area);
+    draw_points(chart, clip_area);
 
     return LV_DESIGN_RES_OK;
 }
