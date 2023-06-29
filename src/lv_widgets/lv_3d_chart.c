@@ -22,7 +22,7 @@
 #define LV_OBJX_NAME "lv_3d_chart"
 
 // Max values - Min valus for all axis  (used to scale the data)
-#define LV_3D_CHART_XMAX 5
+#define LV_3D_CHART_XMAX 10
 #define LV_3D_CHART_YMAX 65
 #define LV_3D_CHART_ZMAX 200
 
@@ -307,7 +307,6 @@ static void draw_points(lv_obj_t *chart, const lv_area_t *clip_area)
 
     lv_3d_chart_point_t *point;
     lv_3d_chart_series_t *series;
-    lv_coord_t offset = 0;
 
     lv_draw_rect_dsc_t point_dsc;
     lv_draw_rect_dsc_init(&point_dsc);
@@ -316,6 +315,9 @@ static void draw_points(lv_obj_t *chart, const lv_area_t *clip_area)
     lv_coord_t point_radius = 3;
 
     /*Go through all cursor lines*/
+    lv_coord_t offset = 0;
+    lv_coord_t x;
+
     _LV_LL_READ_BACK(ext->series_ll, series)
     {
         _LV_LL_READ_BACK(series->points_ll, point)
@@ -324,13 +326,13 @@ static void draw_points(lv_obj_t *chart, const lv_area_t *clip_area)
 
             lv_area_t point_area;
 
-            offset = LV_3D_CHART_MAX_POINTS * offset / LV_3D_CHART_XMAX;
+            x = LV_3D_CHART_MAX_POINTS * offset / LV_3D_CHART_XMAX;
 
-            point_area.x1 = point->point.x + (0.707 * offset);
+            point_area.x1 = point->point.x + (0.707 * x);
             point_area.x2 = point_area.x1 + point_radius;
             point_area.x1 -= point_radius;
 
-            point_area.y1 = point->point.y + (0.409 * offset);
+            point_area.y1 = point->point.y + (0.409 * x);
             point_area.y2 = point_area.y1 + point_radius;
             point_area.y1 -= point_radius;
             lv_draw_rect(&point_area, clip_area, &point_dsc);
