@@ -16,14 +16,16 @@
 #include "../lv_misc/lv_math.h"
 #include "../lv_themes/lv_theme.h"
 
+#include "freertos/task.h"
+
 /*********************
  *      DEFINES
  *********************/
 #define LV_OBJX_NAME "lv_3d_chart"
 
 // Max values - Min valus for all axis  (used to scale the data)
-#define LV_3D_CHART_XMAX 10
-#define LV_3D_CHART_YMAX 65
+#define LV_3D_CHART_XMAX 15
+#define LV_3D_CHART_YMAX 70
 #define LV_3D_CHART_ZMAX 200
 
 #define LV_3D_CHART_MAX_POINTS 100
@@ -322,6 +324,7 @@ static void draw_points(lv_obj_t *chart, const lv_area_t *clip_area)
     {
         _LV_LL_READ_BACK(series->points_ll, point)
         {
+            vTaskDelay(1);
             point_dsc.bg_color = point->color;
 
             lv_area_t point_area;
