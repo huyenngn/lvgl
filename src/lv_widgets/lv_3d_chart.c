@@ -7,8 +7,8 @@
  *      INCLUDES
  *********************/
 #include "lv_3d_chart.h"
-#include "lv_chart.h"
 
+#include "lv_chart.h"
 #include "../lv_misc/lv_debug.h"
 #include "../lv_core/lv_refr.h"
 #include "../lv_core/lv_disp.h"
@@ -22,7 +22,7 @@
 #define LV_OBJX_NAME "lv_3d_chart"
 
 // Max values - Min valus for all axis  (used to scale the data)
-#define LV_3D_CHART_XMAX 100
+#define LV_3D_CHART_XMAX 5
 #define LV_3D_CHART_YMAX 65
 #define LV_3D_CHART_ZMAX 200
 
@@ -166,9 +166,9 @@ lv_3d_chart_point_t * lv_3d_chart_add_cursor(lv_obj_t *chart, lv_coord_t x, lv_c
         break;
     }
 
-    x = 100 * x / LV_3D_CHART_XMAX;
-    y = 100 * y / LV_3D_CHART_YMAX;
-    z = 100 * z / LV_3D_CHART_ZMAX;
+    x = LV_3D_CHART_MAX_POINTS * x / LV_3D_CHART_XMAX;
+    y = LV_3D_CHART_MAX_POINTS * y / LV_3D_CHART_YMAX;
+    z = LV_3D_CHART_MAX_POINTS * z / LV_3D_CHART_ZMAX;
 
     // Convert 3D vector to 2D point on screen
     point->point.x = 0.707 * x - 0.707 * y + 0.0 * z + MID_HOR;
@@ -224,8 +224,8 @@ void lv_3d_chart_set_points(lv_obj_t *chart, lv_3d_chart_series_t *ser, lv_coord
             break;
         }
 
-        y = 100 * y / LV_3D_CHART_YMAX;
-        z = 100 * z / LV_3D_CHART_ZMAX;
+        y = LV_3D_CHART_MAX_POINTS * y / LV_3D_CHART_YMAX;
+        z = LV_3D_CHART_MAX_POINTS * z / LV_3D_CHART_ZMAX;
 
         // Convert 3D vector to 2D point on screen
         point->point.x = MID_HOR - 0.707 * y + 0.0 * z;
@@ -276,7 +276,7 @@ static void draw_cursors(lv_obj_t *chart, const lv_area_t *clip_area)
     point_dsc.radius = LV_RADIUS_CIRCLE;
     point_dsc.outline_width = 1;
 
-    lv_coord_t point_radius = 4;
+    lv_coord_t point_radius = 2;
 
     /*Go through all cursor lines*/
     _LV_LL_READ_BACK(ext->cursor_ll, point)
@@ -313,7 +313,7 @@ static void draw_points(lv_obj_t *chart, const lv_area_t *clip_area)
     lv_draw_rect_dsc_init(&point_dsc);
     point_dsc.radius = LV_RADIUS_CIRCLE;
 
-    lv_coord_t point_radius = 5;
+    lv_coord_t point_radius = 3;
 
     /*Go through all cursor lines*/
     _LV_LL_READ_BACK(ext->series_ll, series)
@@ -323,6 +323,8 @@ static void draw_points(lv_obj_t *chart, const lv_area_t *clip_area)
             point_dsc.bg_color = point->color;
 
             lv_area_t point_area;
+
+            offset = LV_3D_CHART_MAX_POINTS * offset / LV_3D_CHART_XMAX;
 
             point_area.x1 = point->point.x + (0.707 * offset);
             point_area.x2 = point_area.x1 + point_radius;
