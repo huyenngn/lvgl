@@ -16,7 +16,7 @@
 #include "../lv_misc/lv_math.h"
 #include "../lv_themes/lv_theme.h"
 
-#include "freertos/task.h"
+#include <unistd.h>
 
 /*********************
  *      DEFINES
@@ -324,7 +324,7 @@ static void draw_points(lv_obj_t *chart, const lv_area_t *clip_area)
     {
         _LV_LL_READ_BACK(series->points_ll, point)
         {
-            vTaskDelay(1);
+            sleep(0.01);
             point_dsc.bg_color = point->color;
 
             lv_area_t point_area;
