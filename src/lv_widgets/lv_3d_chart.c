@@ -24,7 +24,7 @@
 #define LV_OBJX_NAME "lv_3d_chart"
 
 // Max values - Min valus for all axis  (used to scale the data)
-#define LV_3D_CHART_XMAX 15
+#define LV_3D_CHART_XMAX 10
 #define LV_3D_CHART_YMAX 70
 #define LV_3D_CHART_ZMAX 200
 
@@ -61,8 +61,7 @@ lv_obj_t *lv_3d_chart_create(lv_obj_t *par, const lv_obj_t *copy)
     /*Allocate the object type specific extended data*/
     lv_3d_chart_ext_t *ext = lv_obj_allocate_ext_attr(chart, sizeof(lv_3d_chart_ext_t));
     LV_ASSERT_MEM(ext);
-    if (ext == NULL)
-    {
+    if (ext == NULL) {
         lv_obj_del(chart);
         return NULL;
     }
@@ -103,7 +102,7 @@ lv_3d_chart_series_t *lv_3d_chart_add_series(lv_obj_t *chart)
 
     ext->series_cnt++;
 
-    if (ext->series_cnt > LV_3D_CHART_MAX_POINTS) {
+    if (ext->series_cnt > LV_3D_CHART_XMAX) {
         lv_3d_chart_remove_series(chart, _lv_ll_get_tail(&ext->series_ll));
         return ser;
     }
@@ -116,12 +115,13 @@ lv_3d_chart_series_t *lv_3d_chart_add_series(lv_obj_t *chart)
  * @param chart pointer to a chart object
  * @param series pointer to a data series on 'chart'
  */
-void lv_3d_chart_remove_series(lv_obj_t * chart, lv_3d_chart_series_t * series) {
+void lv_3d_chart_remove_series(lv_obj_t *chart, lv_3d_chart_series_t *series)
+{
     LV_ASSERT_OBJ(chart, LV_OBJX_NAME);
     LV_ASSERT_NULL(series);
 
-    if(chart == NULL || series == NULL) return;
-    lv_3d_chart_ext_t * ext = lv_obj_get_ext_attr(chart);
+    if (chart == NULL || series == NULL) return;
+    lv_3d_chart_ext_t *ext = lv_obj_get_ext_attr(chart);
 
     _lv_ll_clear(&series->points_ll);
 
@@ -133,7 +133,7 @@ void lv_3d_chart_remove_series(lv_obj_t * chart, lv_3d_chart_series_t * series) 
     return;
 }
 
-lv_3d_chart_point_t * lv_3d_chart_add_cursor(lv_obj_t *chart, lv_coord_t x, lv_coord_t y, lv_coord_t z)
+lv_3d_chart_point_t *lv_3d_chart_add_cursor(lv_obj_t *chart, lv_coord_t x, lv_coord_t y, lv_coord_t z)
 {
     LV_ASSERT_OBJ(chart, LV_OBJX_NAME);
 
@@ -146,26 +146,25 @@ lv_3d_chart_point_t * lv_3d_chart_add_cursor(lv_obj_t *chart, lv_coord_t x, lv_c
     // Assign color
     int16_t c = MAX_COLOR * z / LV_3D_CHART_ZMAX;
     uint8_t dif = c % 255;
-    switch (c / 255)
-    {
-    case 0:
-        point->color = LV_COLOR_MAKE(255, dif, 0);
-        break;
-    case 1:
-        point->color = LV_COLOR_MAKE((255 - dif), 255, 0);
-        break;
-    case 2:
-        point->color = LV_COLOR_MAKE(0, 255, dif);
-        break;
-    case 3:
-        point->color = LV_COLOR_MAKE(0, (255 - dif), 255);
-        break;
-    case 4:
-        point->color = LV_COLOR_MAKE(dif, 0, 255);
-        break;
-    default:
-        point->color = LV_COLOR_MAKE(255, 0, (255 - dif));
-        break;
+    switch (c / 255) {
+        case 0:
+            point->color = LV_COLOR_MAKE(255, dif, 0);
+            break;
+        case 1:
+            point->color = LV_COLOR_MAKE((255 - dif), 255, 0);
+            break;
+        case 2:
+            point->color = LV_COLOR_MAKE(0, 255, dif);
+            break;
+        case 3:
+            point->color = LV_COLOR_MAKE(0, (255 - dif), 255);
+            break;
+        case 4:
+            point->color = LV_COLOR_MAKE(dif, 0, 255);
+            break;
+        default:
+            point->color = LV_COLOR_MAKE(255, 0, (255 - dif));
+            break;
     }
 
     x = LV_3D_CHART_MAX_POINTS * x / LV_3D_CHART_XMAX;
@@ -187,12 +186,10 @@ lv_3d_chart_point_t * lv_3d_chart_add_cursor(lv_obj_t *chart, lv_coord_t x, lv_c
 
 void lv_3d_chart_set_points(lv_obj_t *chart, lv_3d_chart_series_t *ser, lv_coord_t *y_array, lv_coord_t *z_array, uint16_t len)
 {
-
     LV_ASSERT_OBJ(chart, LV_OBJX_NAME);
 
     lv_coord_t y, z;
-    for (uint16_t i = 0; i < len; i++)
-    {
+    for (uint16_t i = 0; i < len; i++) {
         y = y_array[i];
         z = z_array[i];
 
@@ -204,26 +201,25 @@ void lv_3d_chart_set_points(lv_obj_t *chart, lv_3d_chart_series_t *ser, lv_coord
         // Assign color
         int16_t c = MAX_COLOR * z / LV_3D_CHART_ZMAX;
         uint8_t dif = c % 255;
-        switch (c / 255)
-        {
-        case 0:
-            point->color = LV_COLOR_MAKE(255, dif, 0);
-            break;
-        case 1:
-            point->color = LV_COLOR_MAKE((255 - dif), 255, 0);
-            break;
-        case 2:
-            point->color = LV_COLOR_MAKE(0, 255, dif);
-            break;
-        case 3:
-            point->color = LV_COLOR_MAKE(0, (255 - dif), 255);
-            break;
-        case 4:
-            point->color = LV_COLOR_MAKE(dif, 0, 255);
-            break;
-        default:
-            point->color = LV_COLOR_MAKE(255, 0, (255 - dif));
-            break;
+        switch (c / 255) {
+            case 0:
+                point->color = LV_COLOR_MAKE(255, dif, 0);
+                break;
+            case 1:
+                point->color = LV_COLOR_MAKE((255 - dif), 255, 0);
+                break;
+            case 2:
+                point->color = LV_COLOR_MAKE(0, 255, dif);
+                break;
+            case 3:
+                point->color = LV_COLOR_MAKE(0, (255 - dif), 255);
+                break;
+            case 4:
+                point->color = LV_COLOR_MAKE(dif, 0, 255);
+                break;
+            default:
+                point->color = LV_COLOR_MAKE(255, 0, (255 - dif));
+                break;
         }
 
         y = LV_3D_CHART_MAX_POINTS * y / LV_3D_CHART_YMAX;
@@ -285,8 +281,7 @@ static void draw_cursors(lv_obj_t *chart, const lv_area_t *clip_area)
     {
         point_dsc.bg_color = point->color;
 
-        if (point_radius)
-        {
+        if (point_radius) {
             lv_area_t point_area;
 
             point_area.x1 = point->point.x;
@@ -322,9 +317,9 @@ static void draw_points(lv_obj_t *chart, const lv_area_t *clip_area)
 
     _LV_LL_READ_BACK(ext->series_ll, series)
     {
+        sleep(0.1);
         _LV_LL_READ_BACK(series->points_ll, point)
         {
-            sleep(0.01);
             point_dsc.bg_color = point->color;
 
             lv_area_t point_area;
@@ -356,8 +351,7 @@ static void draw_grid(lv_obj_t *obj, const lv_area_t *clip_area)
     double x, y, n;
 
     // Draw vertical lines
-    for (x = 0; x < left_x; x += 10)
-    {
+    for (x = 0; x < left_x; x += 10) {
         lv_point_t p1;
         lv_point_t p2;
         p1.x = x + MID_HOR;
@@ -387,8 +381,7 @@ static void draw_grid(lv_obj_t *obj, const lv_area_t *clip_area)
     // Draw horizontal lines
 
     int16_t k = m * MID_HOR + MID_VER;
-    for (y = 0; y < k; y += 11)
-    {
+    for (y = 0; y < k; y += 11) {
         lv_point_t p1;
         lv_point_t p2;
         p1.x = 0;
