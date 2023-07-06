@@ -24,8 +24,8 @@
 #define LV_OBJX_NAME "lv_3d_chart"
 
 // Max values - Min valus for all axis  (used to scale the data)
-#define LV_3D_CHART_XMAX 3
-#define LV_3D_CHART_YMAX 70
+#define LV_3D_CHART_XMAX 5
+#define LV_3D_CHART_YMAX 200
 #define LV_3D_CHART_ZMAX 200
 
 #define LV_3D_CHART_MAX_POINTS 100
@@ -274,7 +274,7 @@ static void draw_cursors(lv_obj_t *chart, const lv_area_t *clip_area)
     point_dsc.radius = LV_RADIUS_CIRCLE;
     point_dsc.outline_width = 1;
 
-    lv_coord_t point_radius = 2;
+    lv_coord_t point_radius = 1;
 
     /*Go through all cursor lines*/
     _LV_LL_READ_BACK(ext->cursor_ll, point)
@@ -309,7 +309,7 @@ static void draw_points(lv_obj_t *chart, const lv_area_t *clip_area)
     lv_draw_rect_dsc_init(&point_dsc);
     point_dsc.radius = LV_RADIUS_CIRCLE;
 
-    lv_coord_t point_radius = 3;
+    lv_coord_t point_radius = 2;
 
     /*Go through all cursor lines*/
     lv_coord_t offset = 0;
