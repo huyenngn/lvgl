@@ -24,7 +24,7 @@
 #define LV_OBJX_NAME "lv_3d_chart"
 
 // Max values - Min valus for all axis  (used to scale the data)
-#define LV_3D_CHART_XMAX 10
+#define LV_3D_CHART_XMAX 3
 #define LV_3D_CHART_YMAX 70
 #define LV_3D_CHART_ZMAX 200
 
