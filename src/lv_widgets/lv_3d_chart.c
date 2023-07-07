@@ -16,18 +16,17 @@
 #include "../lv_misc/lv_math.h"
 #include "../lv_themes/lv_theme.h"
 
-#include <unistd.h>
-
 /*********************
  *      DEFINES
  *********************/
 #define LV_OBJX_NAME "lv_3d_chart"
 
-// Max values - Min valus for all axis  (used to scale the data)
+/* Max values for all axis (used to scale the data). Modify as needed. */
 #define LV_3D_CHART_XMAX 5
 #define LV_3D_CHART_YMAX 200
 #define LV_3D_CHART_ZMAX 200
 
+/* These shouldn't be modified. */
 #define LV_3D_CHART_MAX_POINTS 100
 #define MAX_COLOR 1500
 
@@ -40,15 +39,17 @@ static void draw_grid(lv_obj_t *obj, const lv_area_t *clip_area);
 static void draw_points(lv_obj_t *chart, const lv_area_t *clip_area);
 
 /**********************
- *  STATIC VARIABLES
- **********************/
-
-/**********************
  *   GLOBAL FUNCTIONS
  **********************/
 
-lv_obj_t *lv_3d_chart_create(lv_obj_t *par, const lv_obj_t *copy)
-{
+/**
+ * Create a chart background objects
+ * @param par pointer to an object, it will be the parent of the new chart background
+ * @param copy pointer to a chart background object, if not NULL then the new object will be copied
+ * from it
+ * @return pointer to the created chart background
+ */
+lv_obj_t *lv_3d_chart_create(lv_obj_t *par, const lv_obj_t *copy) {
     // Create a custom widget to draw the grid
     lv_obj_t *chart = lv_obj_create(par, copy);
     LV_ASSERT_MEM(chart);
@@ -85,11 +86,9 @@ lv_obj_t *lv_3d_chart_create(lv_obj_t *par, const lv_obj_t *copy)
 /**
  * Allocate and add a data series to the chart
  * @param chart pointer to a chart object
- * @param color color of the data series
  * @return pointer to the allocated data series
  */
-lv_3d_chart_series_t *lv_3d_chart_add_series(lv_obj_t *chart)
-{
+lv_3d_chart_series_t *lv_3d_chart_add_series(lv_obj_t *chart) {
     LV_ASSERT_OBJ(chart, LV_OBJX_NAME);
 
     lv_3d_chart_ext_t *ext = lv_obj_get_ext_attr(chart);
@@ -115,8 +114,7 @@ lv_3d_chart_series_t *lv_3d_chart_add_series(lv_obj_t *chart)
  * @param chart pointer to a chart object
  * @param series pointer to a data series on 'chart'
  */
-void lv_3d_chart_remove_series(lv_obj_t *chart, lv_3d_chart_series_t *series)
-{
+void lv_3d_chart_remove_series(lv_obj_t *chart, lv_3d_chart_series_t *series) {
     LV_ASSERT_OBJ(chart, LV_OBJX_NAME);
     LV_ASSERT_NULL(series);
 
@@ -133,8 +131,15 @@ void lv_3d_chart_remove_series(lv_obj_t *chart, lv_3d_chart_series_t *series)
     return;
 }
 
-lv_3d_chart_point_t *lv_3d_chart_add_cursor(lv_obj_t *chart, lv_coord_t x, lv_coord_t y, lv_coord_t z)
-{
+/**
+ * Add a cursor with a given color
+ * @param chart pointer to chart object
+ * @param x x-value of the cursor
+ * @param y y-value of the cursor
+ * @param z z-value of the cursor
+ * @return pointer to the created cursor
+ */
+lv_3d_chart_point_t *lv_3d_chart_add_cursor(lv_obj_t *chart, lv_coord_t x, lv_coord_t y, lv_coord_t z) {
     LV_ASSERT_OBJ(chart, LV_OBJX_NAME);
 
     lv_3d_chart_ext_t *ext = lv_obj_get_ext_attr(chart);
@@ -184,8 +189,14 @@ lv_3d_chart_point_t *lv_3d_chart_add_cursor(lv_obj_t *chart, lv_coord_t x, lv_co
  * Setter functions
  *====================*/
 
-void lv_3d_chart_set_points(lv_obj_t *chart, lv_3d_chart_series_t *ser, lv_coord_t *y_array, lv_coord_t *z_array, uint16_t len)
-{
+/**
+ * Set the value of points from two array
+ * @param chart pointer to chart object
+ * @param ser pointer to a x-value series on 'chart'
+ * @param y array of 'lv_coord_t' y-values (with 'len' elements )
+ * @param z array of 'lv_coord_t' z-values (with 'len' elements )
+ */
+void lv_3d_chart_set_points(lv_obj_t *chart, lv_3d_chart_series_t *ser, lv_coord_t *y_array, lv_coord_t *z_array, uint16_t len) {
     LV_ASSERT_OBJ(chart, LV_OBJX_NAME);
 
     lv_coord_t y, z;
@@ -198,7 +209,7 @@ void lv_3d_chart_set_points(lv_obj_t *chart, lv_3d_chart_series_t *ser, lv_coord
         if (point == NULL)
             return;
 
-        // Assign color
+        /* Assign color based on z-value (altitude) */
         int16_t c = MAX_COLOR * z / LV_3D_CHART_ZMAX;
         uint8_t dif = c % 255;
         switch (c / 255) {
@@ -225,7 +236,7 @@ void lv_3d_chart_set_points(lv_obj_t *chart, lv_3d_chart_series_t *ser, lv_coord
         y = LV_3D_CHART_MAX_POINTS * y / LV_3D_CHART_YMAX;
         z = LV_3D_CHART_MAX_POINTS * z / LV_3D_CHART_ZMAX;
 
-        // Convert 3D vector to 2D point on screen
+        /* Convert 3D vector to 2D point on screen */
         point->point.x = MID_HOR - 0.707 * y + 0.0 * z;
         point->point.y = MID_VER + 0.409 * y - 0.816 * z;
     }
@@ -241,8 +252,7 @@ void lv_3d_chart_set_points(lv_obj_t *chart, lv_3d_chart_series_t *ser, lv_coord
  * Refresh a chart if its data line has changed
  * @param chart pointer to chart object
  */
-void lv_3d_chart_refresh(lv_obj_t *chart)
-{
+void lv_3d_chart_refresh(lv_obj_t *chart) {
     LV_ASSERT_OBJ(chart, LV_OBJX_NAME);
 
     lv_obj_invalidate(chart);
@@ -252,8 +262,13 @@ void lv_3d_chart_refresh(lv_obj_t *chart)
  *   STATIC FUNCTIONS
  **********************/
 
-static lv_design_res_t lv_3d_chart_design(lv_obj_t *chart, const lv_area_t *clip_area)
-{
+/**
+ * Handle the drawing related tasks of the chart backgrounds
+ * @param chart pointer to an object
+ * @param clip_area the object will be drawn only in this area
+ * @param return an element of `lv_design_res_t`
+ */
+static lv_design_res_t lv_3d_chart_design(lv_obj_t *chart, const lv_area_t *clip_area) {
     draw_grid(chart, clip_area);
     draw_cursors(chart, clip_area);
     draw_points(chart, clip_area);
@@ -261,8 +276,12 @@ static lv_design_res_t lv_3d_chart_design(lv_obj_t *chart, const lv_area_t *clip
     return LV_DESIGN_RES_OK;
 }
 
-static void draw_cursors(lv_obj_t *chart, const lv_area_t *clip_area)
-{
+/**
+ * Draw the cursors on chart
+ * @param chart pointer to chart object
+ * @param clip_area mask, inherited from the design function
+ */
+static void draw_cursors(lv_obj_t *chart, const lv_area_t *clip_area) {
     lv_3d_chart_ext_t *ext = lv_obj_get_ext_attr(chart);
     if (_lv_ll_is_empty(&ext->cursor_ll))
         return;
@@ -276,9 +295,8 @@ static void draw_cursors(lv_obj_t *chart, const lv_area_t *clip_area)
 
     lv_coord_t point_radius = 1;
 
-    /*Go through all cursor lines*/
-    _LV_LL_READ_BACK(ext->cursor_ll, point)
-    {
+    /* Go through all cursors */
+    _LV_LL_READ_BACK(ext->cursor_ll, point) {
         point_dsc.bg_color = point->color;
 
         if (point_radius) {
@@ -296,8 +314,12 @@ static void draw_cursors(lv_obj_t *chart, const lv_area_t *clip_area)
     }
 }
 
-static void draw_points(lv_obj_t *chart, const lv_area_t *clip_area)
-{
+/**
+ * Draw the data points for every series on chart
+ * @param chart pointer to chart object
+ * @param clip_area mask, inherited from the design function
+ */
+static void draw_points(lv_obj_t *chart, const lv_area_t *clip_area) {
     lv_3d_chart_ext_t *ext = lv_obj_get_ext_attr(chart);
     if (_lv_ll_is_empty(&ext->series_ll))
         return;
@@ -311,15 +333,13 @@ static void draw_points(lv_obj_t *chart, const lv_area_t *clip_area)
 
     lv_coord_t point_radius = 2;
 
-    /*Go through all cursor lines*/
     lv_coord_t offset = 0;
     lv_coord_t x;
 
-    _LV_LL_READ_BACK(ext->series_ll, series)
-    {
-        sleep(0.1);
-        _LV_LL_READ_BACK(series->points_ll, point)
-        {
+    /* Go through all series */
+    _LV_LL_READ_BACK(ext->series_ll, series) {
+        /* Go through points of series */
+        _LV_LL_READ_BACK(series->points_ll, point) {
             point_dsc.bg_color = point->color;
 
             lv_area_t point_area;
@@ -339,18 +359,22 @@ static void draw_points(lv_obj_t *chart, const lv_area_t *clip_area)
     }
 }
 
-static void draw_grid(lv_obj_t *obj, const lv_area_t *clip_area)
-{
+/**
+ * Draw the division lines on chart background
+ * @param chart pointer to chart object
+ * @param clip_area mask, inherited from the design function
+ */
+static void draw_grid(lv_obj_t *chart, const lv_area_t *clip_area) {
     lv_draw_line_dsc_t line_dsc;
     lv_draw_line_dsc_init(&line_dsc);
-    lv_obj_init_draw_line_dsc(obj, LV_CHART_PART_BG, &line_dsc);
+    lv_obj_init_draw_line_dsc(chart, LV_CHART_PART_BG, &line_dsc);
 
     double left_x = 1.73 * (MID_VER);
     double m = MID_VER / left_x;
 
     double x, y, n;
 
-    // Draw vertical lines
+    /* Draw vertical lines */
     for (x = 0; x < left_x; x += 10) {
         lv_point_t p1;
         lv_point_t p2;
@@ -378,9 +402,9 @@ static void draw_grid(lv_obj_t *obj, const lv_area_t *clip_area)
         lv_draw_line(&p1, &p2, clip_area, &line_dsc);
     }
 
-    // Draw horizontal lines
-
     int16_t k = m * MID_HOR + MID_VER;
+
+    /* Draw horizontal lines */
     for (y = 0; y < k; y += 11) {
         lv_point_t p1;
         lv_point_t p2;
