@@ -56,7 +56,7 @@ static void draw_points(lv_obj_t *chart, const lv_area_t *clip_area);
  * @return pointer to the created chart background
  */
 lv_obj_t *lv_3d_chart_create(lv_obj_t *par, const lv_obj_t *copy) {
-    // Create a custom widget to draw the grid
+    /* Create a custom widget to draw the grid */
     lv_obj_t *chart = lv_obj_create(par, copy);
     LV_ASSERT_MEM(chart);
     if (chart == NULL)
