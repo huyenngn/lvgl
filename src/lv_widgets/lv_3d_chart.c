@@ -21,8 +21,14 @@
  *********************/
 #define LV_OBJX_NAME "lv_3d_chart"
 
+/* Size of chart. Modify as needed. */
+#define MAX_VER 160
+#define MAX_HOR 135
+#define MID_VER 80
+#define MID_HOR 68
+
 /* Max values for all axis (used to scale the data). Modify as needed. */
-#define LV_3D_CHART_XMAX 5
+#define LV_3D_CHART_XMAX 5 /** number of series that are simultaniously displayed on the screen */
 #define LV_3D_CHART_YMAX 200
 #define LV_3D_CHART_ZMAX 200
 
@@ -148,7 +154,7 @@ lv_3d_chart_point_t *lv_3d_chart_add_cursor(lv_obj_t *chart, lv_coord_t x, lv_co
     if (point == NULL)
         return NULL;
 
-    // Assign color
+    /* Assign color */
     int16_t c = MAX_COLOR * z / LV_3D_CHART_ZMAX;
     uint8_t dif = c % 255;
     switch (c / 255) {
@@ -176,7 +182,7 @@ lv_3d_chart_point_t *lv_3d_chart_add_cursor(lv_obj_t *chart, lv_coord_t x, lv_co
     y = LV_3D_CHART_MAX_POINTS * y / LV_3D_CHART_YMAX;
     z = LV_3D_CHART_MAX_POINTS * z / LV_3D_CHART_ZMAX;
 
-    // Convert 3D vector to 2D point on screen
+    /* Convert 3D vector to 2D point on screen */
     point->point.x = 0.707 * x - 0.707 * y + 0.0 * z + MID_HOR;
     point->point.y = 0.409 * x + 0.409 * y - 0.816 * z + MID_VER;
 

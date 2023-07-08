@@ -21,20 +21,18 @@ extern "C" {
 /*********************
  *      DEFINES
  *********************/
-#define MAX_VER 160
-#define MAX_HOR 135
-#define MID_VER 80
-#define MID_HOR 68
+
 
 /**********************
  *      TYPEDEFS
  **********************/
+/* 2D point on the screen */
 typedef struct {
     lv_point_t point;
-    lv_color_t color;
+    lv_color_t color; /** Point's z-value is dynamically mapped to a color */
 } lv_3d_chart_point_t;
 
-/* A series represents a series of points witha common x-value */
+/* A series represents a series of points with a common x-value */
 typedef struct {
     lv_ll_t points_ll;
 } lv_3d_chart_series_t;
